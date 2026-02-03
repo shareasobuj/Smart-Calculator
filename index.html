@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>স্মার্ট ওমনি ক্যালকুলেটর Pro</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --glass: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #fff;
+        }
+
+        .app-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 30px;
+            width: 380px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        select {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            padding: 12px;
+            color: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+
+        .tab-btn.active { background: var(--primary); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4); }
+
+        .content { display: none; animation: slideUp 0.4s ease; }
+        .content.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 15px;
+            border: none;
+            background: white;
+            color: #333;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .calc-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            background: #00d2d3;
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .calc-btn:hover { background: #01a3a4; transform: scale(1.02); }
+
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .res-val { color: #feca57; font-size: 20px; font-weight: bold; }
+
+        /* General Calculator Grid */
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .grid button {
+            padding: 20px; border-radius: 15px; border: none; font-size: 20px;
+            cursor: pointer; background: rgba(255,255,255,0.1); color: white;
+        }
+        .grid .op { color: #ff9f43; font-weight: bold; }
+        .grid .eq { background: var(--primary); grid-column: span 2; }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <div class="header">
+        <h3 id="appTitle">স্মার্ট ক্যালকুলেটর</h3>
+        <select id="langSwitch" onchange="changeLang()">
+            <option value="bn">বাংলা</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="tabMath" onclick="showTab('math')">হিসাব</button>
+        <button class="tab-btn" id="tabCurrency" onclick="showTab('currency')">ডলার</button>
+        <button class="tab-btn" id="tabAge" onclick="showTab('age')">বয়স</button>
+        <button class="tab-btn" id="tabBmi" onclick="showTab('bmi')">BMI</button>
+    </div>
+
+    <div id="math" class="content active">
+        <input type="text" id="screen" readonly style="text-align:right; font-size: 28px;" placeholder="0">
+        <div class="grid">
+            <button onclick="clearS()" style="color:#ff6b6b">C</button>
+            <button onclick="add('/')" class="op">÷</button>
+            <button onclick="add('*')" class="op">×</button>
+            <button onclick="add('-')" class="op">-</button>
+            <button onclick="add('7')">7</button>
+            <button onclick="add('8')">8</button>
+            <button onclick="add('9')">9</button>
+            <button onclick="add('+')" class="op">+</button>
+            <button onclick="add('4')">4</button>
+            <button onclick="add('5')">5</button>
+            <button onclick="add('6')">6</button>
+            <button onclick="solve()" class="eq">=</button>
+            <button onclick="add('1')">1</button>
+            <button onclick="add('2')">2</button>
+            <button onclick="add('3')">3</button>
+            <button onclick="add('0')">0</button>
+        </div>
+    </div>
+
+    <div id="currency" class="content">
+        <p id="currLabel">পরিমাণ (USD):</p>
+        <input type="number" id="usd" placeholder="USD">
+        <button class="calc-btn" onclick="convert()">কনভার্ট করুন</button>
+        <div class="result" id="currRes">লাইভ রেট লোড হচ্ছে...</div>
+    </div>
+
+    <div id="age" class="content">
+        <p id="ageLabel">আপনার জন্ম তারিখ সিলেক্ট করুন:</p>
+        <input type="date" id="dob">
+        <button class="calc-btn" onclick="getAge()">বয়স হিসাব করুন</button>
+        <div class="result" id="ageRes">ফলাফল এখানে দেখাবে</div>
+    </div>
+
+    <div id="bmi" class="content">
+        <input type="number" id="weight" placeholder="ওজন (কেজি)">
+        <div style="display: flex; gap: 5px;">
+            <input type="number" id="feet" placeholder="ফুট">
+            <input type="number" id="inches" placeholder="ইঞ্চি">
+        </div>
+        <button class="calc-btn" onclick="getBMI()">BMI চেক</button>
+        <div class="result" id="bmiRes">---</div>
+    </div>
+</div>
+
+<script>
+    let currentRate = 120;
+
+    // লাইভ রেট API
+    async function updateRate() {
+        try {
+            const res = await fetch('https://open.er-api.com/v6/latest/USD');
+            const data = await res.json();
+            currentRate = data.rates.BDT;
+            document.getElementById('currRes').innerText = `১ ডলার = ${currentRate.toFixed(2)} টাকা`;
+        } catch (e) {
+            document.getElementById('currRes').innerText = "অফলাইন রেট: ১ ডলার = ১২০ টাকা";
+        }
+    }
+    updateRate();
+
+    const langData = {
+        bn: {
+            title: "স্মার্ট ওমনি ক্যালকুলেটর", tabMath: "হিসাব", tabCurr: "ডলার", tabAge: "বয়স", tabBmi: "BMI",
+            currLab: "পরিমাণ (USD):", ageLab: "আপনার জন্ম তারিখ সিলেক্ট করুন:", y: "বছর", m: "মাস", d: "দিন"
+        },
+        en: {
+            title: "Smart OmniCalc", tabMath: "Math", tabCurr: "USD", tabAge: "Age", tabBmi: "BMI",
+            currLab: "Amount (USD):", ageLab: "Select Date of Birth:", y: "Years", m: "Months", d: "Days"
+        }
+    };
+
+    function changeLang() {
+        const lang = document.getElementById('langSwitch').value;
+        const d = langData[lang];
+        document.getElementById('appTitle').innerText = d.title;
+        document.getElementById('tabMath').innerText = d.tabMath;
+        document.getElementById('tabCurrency').innerText = d.tabCurr;
+        document.getElementById('tabAge').innerText = d.tabAge;
+        document.getElementById('tabBmi').innerText = d.tabBmi;
+        document.getElementById('currLabel').innerText = d.currLab;
+        document.getElementById('ageLabel').innerText = d.ageLab;
+    }
+
+    function showTab(id) {
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // ম্যাথ ক্যালকুলেটর
+    let sc = document.getElementById('screen');
+    function add(v) { sc.value += v; }
+    function clearS() { sc.value = ""; }
+    function solve() { try { sc.value = eval(sc.value); } catch { sc.value = "Error"; } }
+
+    function convert() {
+        let val = document.getElementById('usd').value;
+        document.getElementById('currRes').innerHTML = `<span class="res-val">${(val * currentRate).toLocaleString()} BDT</span>`;
+    }
+
+    // ***** নিখুঁত বয়স ক্যালকুলেটর (বছর, মাস, দিন) *****
+    function getAge() {
+        const dobInput = document.getElementById('dob').value;
+        if (!dobInput) { alert("তারিখ দিন!"); return; }
+
+        const dob = new Date(dobInput);
+        const today = new Date();
+
+        let y1 = dob.getFullYear();
+        let m1 = dob.getMonth();
+        let d1 = dob.getDate();
+
+        let y2 = today.getFullYear();
+        let m2 = today.getMonth();
+        let d2 = today.getDate();
+
+        let y, m, d;
+
+        // বছর হিসাব
+        y = y2 - y1;
+
+        // মাস হিসাব
+        if (m2 >= m1) {
+            m = m2 - m1;
+        } else {
+            y--;
+            m = 12 + m2 - m1;
+        }
+
+        // দিন হিসাব
+        if (d2 >= d1) {
+            d = d2 - d1;
+        } else {
+            m--;
+            if (m < 0) {
+                m = 11;
+                y--;
+            }
+            let daysInLastMonth = new Date(y2, m2, 0).getDate();
+            d = daysInLastMonth + d2 - d1;
+        }
+
+        const lang = document.getElementById('langSwitch').value;
+        const t = langData[lang];
+
+        document.getElementById('ageRes').innerHTML = `
+            <div class="res-val">${y} ${t.y}</div>
+            <div class="res-val">${m} ${t.m}</div>
+            <div class="res-val">${d} ${t.d}</div>
+        `;
+    }
+
+    // BMI ক্যালকুলেটর
+    function getBMI() {
+        let w = parseFloat(document.getElementById('weight').value);
+        let f = parseFloat(document.getElementById('feet').value);
+        let i = parseFloat(document.getElementById('inches').value) || 0;
+
+        if(w && f) {
+            let totalMeters = ((f * 12) + i) * 0.0254;
+            let bmi = (w / (totalMeters * totalMeters)).toFixed(1);
+            let status = bmi < 18.5 ? "ওজন কম" : bmi < 25 ? "স্বাভাবিক" : "অতিরিক্ত ওজন";
+            document.getElementById('bmiRes').innerHTML = `<span class="res-val">${bmi}</span> (${status})`;
+        } else {
+            alert("সব ঘর পূরণ করুন!");
+        }
+    }
+</script>
+</body>
+                                                                </html>
